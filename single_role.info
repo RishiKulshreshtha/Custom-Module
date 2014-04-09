@@ -1,0 +1,4 @@
+name = Single Role
+description = This module enables Single Role feature in Drupal.
+core = 7.x
+version = 1.x

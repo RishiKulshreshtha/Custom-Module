@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * --------------------- COPYRIGHT ---------------------
+ * This module is developed by
+ * @author Rishi Kulshreshtha <rishishreshtha@gmail.com>
+ * and contributed by
+ * @author Rahul Seth <rahulashokseth@gmail.com>
+ * 
+ */
+
+/**
+ * Implementation of hook_form_alter()
+ */
+function single_role_form_alter(&$form, $form_state, $form_id) {
+	if ($form_id == 'user_register_form' || $form_id == 'user_profile_form') {
+		// The magic code goes here, but requires hook_user_presave() for further process.
+		$form['account']['roles']['#type'] = 'select';
+		$form['account']['roles']['#multiple'] = FALSE;
+		foreach($form['account']['roles']['#default_value'] as $key => $default){
+			if($default != 2){
+				$form['account']['roles']['#default_value'] = $form['account']['roles']['#default_value'][$key];
+			}
+		}
+	}
+}
+
+/**
+ * Implementation of hook_user_presave()
+ */
+function single_role_user_presave(&$edit, $account, $category) {
+	// This is TRUE only if the user is new
+	$new_user = $account->is_new;
+
+	// If only new user created / modified by admin
+	if (($new_user == TRUE) || (!array_key_exists('current_pass_required_values', $edit))) {
+		$edit['roles'] = array(DRUPAL_AUTHENTICATED_RID => TRUE, $edit['roles'] => $edit['roles']);
+	} else { // If profile edited by loggedin / self user
+
+		$roles = $edit['roles'];
+		$roles = array_combine($roles, $roles);
+
+		if (in_array('2', $roles)) {
+			unset($roles[2]);
+		}
+		$edit['roles'] = array(DRUPAL_AUTHENTICATED_RID => TRUE) + $roles;
+	}
+}
